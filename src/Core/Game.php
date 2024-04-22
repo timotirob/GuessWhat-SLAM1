@@ -19,13 +19,17 @@ class Game
 
         // Si aucune carte à deviner n'est fournie, choisissez une carte aléatoire du jeu
         if ($cardToGuess === null) {
-            $this->cardToGuess = $this->cardGame->getCards(rand(1, $this->cardGame->countCards()));
+            // Obtenir un index aléatoire dans la plage des indices valides du tableau de cartes
+            $randomIndex = rand(0, $this->cardGame->countCards() - 1);
+            // Utiliser cet index pour récupérer une carte aléatoire du jeu
+            $this->cardToGuess = $this->cardGame->getCard($randomIndex);
         } else {
             $this->cardToGuess = $cardToGuess;
         }
 
         $this->withHelp = $withHelp;
     }
+
 
     public function getWithHelp(): bool
     {
@@ -57,7 +61,7 @@ class Game
         $scoreEfficacite = abs($resultatCumulatif) / $nombreTentatives;
 
         // Déterminer si la stratégie du joueur est efficace en comparant le score d'efficacité avec un seuil
-        $efficace = ($scoreEfficacite > 0.35) ? "Non" : "Oui"; // Seuil d'efficacité de 0.35
+        $efficace = ($scoreEfficacite > 0.4) ? "Non" : "Oui"; // Seuil d'efficacité de 0.4
 
         // Vérifier si l'aide à la décision était activée
         $aideActivee = $this->withHelp ? "Oui" : "Non";

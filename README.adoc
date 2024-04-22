@@ -59,77 +59,38 @@ Mise en place de l'environnement de développement sur PHP Storm.
 ----
 <?php
 
-namespace App\Tests\Core;
+namespace App\Core;
 
-use App\Core\CardGame;
-use PHPUnit\Framework\TestCase;
-use App\Core\Card;
-
-class CardTest extends TestCase
+class Card
 {
 
-  public function testName()
-  {
-    $card = new Card('As', 'Trefle');
-    $this->assertEquals('As', $card->getName());
+  private $name;
+  private $color;
 
-    $card = new Card('2', 'Trefle');
-    $this->assertEquals('2', $card->getName());
+  public function __construct(string $name, string $color)
+  {
+    $this->name = $name;
+    $this->color = $color;
   }
 
-  public function testColor()
+  public function getName(): string
   {
-    $card = new Card('As', 'Trefle');
-    $this->assertEquals('Trefle', $card->getColor());
-
-    $card = new Card('As', 'Pique');
-    $this->assertEquals('Pique', $card->getColor());
+    return $this->name;
   }
 
-  public function testCompareSameCard()
+  public function setName(string $name): void
   {
-    $card1 = new Card('As', 'Trefle');
-    $card2 = new Card('As', 'Pique');
-
-    $this->assertEquals(0, CardGame::compare($card1,$card1));
-    $this->assertNotEquals(0, CardGame::compare($card1,$card2));
+    $this->name = $name;
   }
 
-  public function testCompareSameNameNoSameColor()
+  public function getColor() : string
   {
-      $card1 = new Card('As', 'Trefle');
-      $card2 = new Card('As', 'Carreau');
-      $card3 = new Card('As', 'Coeur');
-
-      $this->assertEquals(1, CardGame::compare($card2,$card1));
-      $this->assertEquals(-1, CardGame::compare($card1,$card3));
-
+    return $this->color;
   }
 
-  public function testCompareNoSameNameSameColor()
+  public function __toString() : string
   {
-      $card1 = new Card('2', 'Coeur');
-      $card2 = new Card('Valet', 'Coeur');
-      $card3 = new Card('As', 'Coeur');
-
-      $this->assertEquals(1, CardGame::compare($card2,$card1));
-      $this->assertEquals(-1, CardGame::compare($card2,$card3));
-  }
-
-  public function testCompareNoSameNameNoSameColor()
-  {
-      $card1 = new Card('As', 'Pique');
-      $card2 = new Card('Roi', 'Coeur');
-
-      $this->assertEquals(1, CardGame::compare($card1,$card2));
-      $this->assertEquals(-1, CardGame::compare($card2,$card1));
-  }
-
-  public function testToString()
-  {
-      $card = new Card('As', 'Trefle');
-
-      $this->assertEquals('As de Trefle', $card->__toString());
+      return $this->name . " de " . $this->color;
   }
 
 }
@@ -255,10 +216,6 @@ class CardGame
         usort($this->cards, $compareFunction);
     }
 
-
-
-
-
     // Comparaison de la carte c1 et la carte c2
     public static function compare(Card $c1, Card $c2): int
     {
@@ -293,7 +250,7 @@ class CardGame
         $colors = array_keys(self::ORDER_COLORS);
         $names = array_keys(self::ORDER_NAMES);
 
-        // Sélectionner les 8 premières valeurs de ORDER_NAMES pour chaque couleur
+        // Sélectionner les 8 dernières valeurs de ORDER_NAMES pour chaque couleur
         foreach ($colors as $color) {
             $moitieNames = array_slice($names, 5);
             foreach ($moitieNames as $name) {
@@ -321,14 +278,15 @@ class CardGame
         return $cards;
     }
 
-    public function getCard(int $index): Card {
+    public function getCard(int $index): Card
+    {
         // Vérifier si l'index est valide
-        if ($index < 1 || $index > count($this->cards)) {
-            // Si l'index est invalide, renvoyer la première carte du jeu
+        // On commence par 1 et non 0 au cas où la méthode est utilisé dans un programme pour que ce soit lisible pour l'utilisateur
+        if ($index === null || $index < 1 || $index > count($this->cards)) {
             return $this->cards[0];
         }
         // Sinon, renvoyer la carte à l'index spécifié
-        return $this->cards[$index-1];
+        return $this->cards[$index - 1];
     }
 
     public function countCards(): int
@@ -532,13 +490,17 @@ class Game
 
         // Si aucune carte à deviner n'est fournie, choisissez une carte aléatoire du jeu
         if ($cardToGuess === null) {
-            $this->cardToGuess = $this->cardGame->getCards(rand(1, $this->cardGame->countCards()));
+            // Obtenir un index aléatoire dans la plage des indices valides du tableau de cartes
+            $randomIndex = rand(0, $this->cardGame->countCards() - 1);
+            // Utiliser cet index pour récupérer une carte aléatoire du jeu
+            $this->cardToGuess = $this->cardGame->getCard($randomIndex);
         } else {
             $this->cardToGuess = $cardToGuess;
         }
 
         $this->withHelp = $withHelp;
     }
+
 
     public function getWithHelp(): bool
     {
@@ -570,7 +532,7 @@ class Game
         $scoreEfficacite = abs($resultatCumulatif) / $nombreTentatives;
 
         // Déterminer si la stratégie du joueur est efficace en comparant le score d'efficacité avec un seuil
-        $efficace = ($scoreEfficacite > 0.35) ? "Non" : "Oui"; // Seuil d'efficacité de 0.35
+        $efficace = ($scoreEfficacite > 0.4) ? "Non" : "Oui"; // Seuil d'efficacité de 0.4
 
         // Vérifier si l'aide à la décision était activée
         $aideActivee = $this->withHelp ? "Oui" : "Non";
@@ -614,17 +576,19 @@ class GameTest extends TestCase
     $this->assertTrue($game->getWithHelp());
   }
 
-  public function testGetWithHelp()
-  {
-      // Création d'une instance de Game avec l'aide activée
-      $gameWithHelp = new Game(new CardGame([]), null, true);
-      $withHelp = $gameWithHelp->getWithHelp(); // Appel de la méthode getWithHelp pour vérifier si l'aide est activée
-      $this->assertTrue($withHelp); // Vérifie si l'aide est activée
+    public function testGetWithHelp()
+    {
+        // Création d'une instance de Game avec l'aide activée
+        $gameWithHelp = new Game();
 
-      // Création d'une instance de Game avec l'aide désactivée
-      $gameWithoutHelp = new Game(new CardGame([]), null, false);
-      $withoutHelp = $gameWithoutHelp->getWithHelp(); // Appel de la méthode getWithHelp pour vérifier si l'aide est désactivée
-      $this->assertFalse($withoutHelp); // Vérifie si l'aide est désactivée
+        // Vérification que l'aide est activée
+        $this->assertTrue($gameWithHelp->getWithHelp());
+
+        // Création d'une instance de Game avec l'aide désactivée
+        $gameWithoutHelp = new Game(null, null, false);
+
+        // Vérification que l'aide est désactivée
+        $this->assertFalse($gameWithoutHelp->getWithHelp());
     }
 
     public function testGetStatistics()
@@ -704,7 +668,8 @@ function getCardGameChoice(): int {
     echo "1. Jeu de 32 cartes\n";
     echo "2. Jeu de 52 cartes\n";
 
-    $choice = intval(trim(readline("Entrez votre choix : ")));
+    echo "Entrez votre choix : ";
+    $choice = intval(trim(readline("")));
 
     // Vérifier si le choix est valide
     if ($choice !== 1 && $choice !== 2) {
@@ -720,7 +685,8 @@ function getAttemptChoice(): int {
     global $cardGame;
     echo "Combien de tentatives voulez-vous ? (entre 1 et " . $cardGame->countCards() . ")\n";
 
-    $choice = intval(trim(readline("Entrez le nombre de tentatives : ")));
+    echo "Entrez le nombre de tentatives : ";
+    $choice = intval(trim(readline("")));
 
     // Vérifier si le choix est valide
     if ($choice <= 0 || $choice > $cardGame->countCards()) {
@@ -737,7 +703,8 @@ function getWithHelpChoice(): bool {
     echo "1. Oui\n";
     echo "2. Non\n";
 
-    $choice = intval(trim(readline("Entrez votre choix : ")));
+    echo "Entrez votre choix : ";
+    $choice = intval(trim(readline("")));
 
     // Vérifier si le choix est valide
     if ($choice !== 1 && $choice !== 2) {
@@ -781,13 +748,19 @@ do {
     echo "\n - LANCEMENT DE LA PARTIE - \n";
     echo "Jeu : " . $cardGame->countCards() . " cartes \n";
     echo "Nombre de tentavive(s) : $attemptChoice \n";
-    echo "Aide à la recherche : " . ($withHelp ? "Oui" : "Non");
+    echo "Aide à la recherche : " . ($withHelp ? "Oui" : "Non" . "\n");
+    if ($cardGameChoice === 1) {
+        echo "Ordre de puissance des noms : As > Roi > Dame > Valet > 10 > 9 > 8 > 7 \n";
+    } else {
+        echo "Ordre de puissance des noms : As > Roi > Dame > Valet > 10 > 9 > 8 > 7 > 6 > 5 > 4 > 3 > 2 \n";
+    }
+    echo "Ordre de puissance des couleurs : Pique > Coeur > Carreau > Trefle";
 
     $remainAttempt = $attemptChoice;
 
     while ($remainAttempt > 0 ) {
 
-        echo "\n \nVous avez $remainAttempt tentative(s).\n";
+        echo "\n\nVous avez $remainAttempt tentative(s).\n";
 
         // Saisie du nom de la carte par l'utilisateur
         $userCardName = null;
@@ -797,7 +770,7 @@ do {
             if (!in_array($userCardName, array_keys(App\Core\CardGame::ORDER_NAMES))) {
                 echo "Le nom que vous avez choisi n'est pas valide. \n";
             } elseif ($cardGameChoice == 1 && App\Core\CardGame::ORDER_NAMES[$userCardName] < 6) {
-                echo "Le nom de carte n'est pas valide pour un jeu de 32 cartes. Veuillez entrer un nom de carte avec une puissance strictement inférieure à 6.\n";
+                echo "Le nom de carte n'est pas valide pour un jeu de 32 cartes. Veuillez entrer un nom de carte avec une puissance strictement inférieure à 7.\n";
             }
         }
 
@@ -850,8 +823,19 @@ do {
     echo "1. Oui\n";
     echo "2. Non\n";
 
-    $restart = intval(trim(readline("Entrez votre choix : ")));
 
+    $restart = 0;
+    while($restart !== 1 && $restart !== 2) {
+        echo "Entrez votre choix : ";
+        $restart = intval(trim(readline("")));
+    }
+
+    if ($restart == 1) {
+        for ($i=0; $i<100; $i++) {
+            echo "\n";
+        }
+        echo " - NOUVELLE PARTIE - \n\n\n";
+    }
 } while ($restart === 1);
 
 echo "\n\n - FIN -";

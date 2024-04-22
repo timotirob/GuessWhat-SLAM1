@@ -32,10 +32,6 @@ class CardGame
         usort($this->cards, $compareFunction);
     }
 
-
-
-
-
     // Comparaison de la carte c1 et la carte c2
     public static function compare(Card $c1, Card $c2): int
     {
@@ -70,7 +66,7 @@ class CardGame
         $colors = array_keys(self::ORDER_COLORS);
         $names = array_keys(self::ORDER_NAMES);
 
-        // Sélectionner les 8 premières valeurs de ORDER_NAMES pour chaque couleur
+        // Sélectionner les 8 dernières valeurs de ORDER_NAMES pour chaque couleur
         foreach ($colors as $color) {
             $moitieNames = array_slice($names, 5);
             foreach ($moitieNames as $name) {
@@ -98,14 +94,15 @@ class CardGame
         return $cards;
     }
 
-    public function getCard(int $index): Card {
+    public function getCard(int $index): Card
+    {
         // Vérifier si l'index est valide
-        if ($index < 1 || $index > count($this->cards)) {
-            // Si l'index est invalide, renvoyer la première carte du jeu
+        // On commence par 1 et non 0 au cas où la méthode est utilisé dans un programme pour que ce soit lisible pour l'utilisateur
+        if ($index === null || $index < 1 || $index > count($this->cards)) {
             return $this->cards[0];
         }
         // Sinon, renvoyer la carte à l'index spécifié
-        return $this->cards[$index-1];
+        return $this->cards[$index - 1];
     }
 
     public function countCards(): int

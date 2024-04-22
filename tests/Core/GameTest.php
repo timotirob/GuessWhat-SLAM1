@@ -17,17 +17,19 @@ class GameTest extends TestCase
     $this->assertTrue($game->getWithHelp());
   }
 
-  public function testGetWithHelp()
-  {
-      // Création d'une instance de Game avec l'aide activée
-      $gameWithHelp = new Game(new CardGame([]), null, true);
-      $withHelp = $gameWithHelp->getWithHelp(); // Appel de la méthode getWithHelp pour vérifier si l'aide est activée
-      $this->assertTrue($withHelp); // Vérifie si l'aide est activée
+    public function testGetWithHelp()
+    {
+        // Création d'une instance de Game avec l'aide activée
+        $gameWithHelp = new Game();
 
-      // Création d'une instance de Game avec l'aide désactivée
-      $gameWithoutHelp = new Game(new CardGame([]), null, false);
-      $withoutHelp = $gameWithoutHelp->getWithHelp(); // Appel de la méthode getWithHelp pour vérifier si l'aide est désactivée
-      $this->assertFalse($withoutHelp); // Vérifie si l'aide est désactivée
+        // Vérification que l'aide est activée
+        $this->assertTrue($gameWithHelp->getWithHelp());
+
+        // Création d'une instance de Game avec l'aide désactivée
+        $gameWithoutHelp = new Game(null, null, false);
+
+        // Vérification que l'aide est désactivée
+        $this->assertFalse($gameWithoutHelp->getWithHelp());
     }
 
     public function testGetStatistics()

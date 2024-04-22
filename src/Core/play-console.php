@@ -8,7 +8,8 @@ function getCardGameChoice(): int {
     echo "1. Jeu de 32 cartes\n";
     echo "2. Jeu de 52 cartes\n";
 
-    $choice = intval(trim(readline("Entrez votre choix : ")));
+    echo "Entrez votre choix : ";
+    $choice = intval(trim(readline("")));
 
     // Vérifier si le choix est valide
     if ($choice !== 1 && $choice !== 2) {
@@ -24,7 +25,8 @@ function getAttemptChoice(): int {
     global $cardGame;
     echo "Combien de tentatives voulez-vous ? (entre 1 et " . $cardGame->countCards() . ")\n";
 
-    $choice = intval(trim(readline("Entrez le nombre de tentatives : ")));
+    echo "Entrez le nombre de tentatives : ";
+    $choice = intval(trim(readline("")));
 
     // Vérifier si le choix est valide
     if ($choice <= 0 || $choice > $cardGame->countCards()) {
@@ -41,7 +43,8 @@ function getWithHelpChoice(): bool {
     echo "1. Oui\n";
     echo "2. Non\n";
 
-    $choice = intval(trim(readline("Entrez votre choix : ")));
+    echo "Entrez votre choix : ";
+    $choice = intval(trim(readline("")));
 
     // Vérifier si le choix est valide
     if ($choice !== 1 && $choice !== 2) {
@@ -85,13 +88,19 @@ do {
     echo "\n - LANCEMENT DE LA PARTIE - \n";
     echo "Jeu : " . $cardGame->countCards() . " cartes \n";
     echo "Nombre de tentavive(s) : $attemptChoice \n";
-    echo "Aide à la recherche : " . ($withHelp ? "Oui" : "Non");
+    echo "Aide à la recherche : " . ($withHelp ? "Oui" : "Non" . "\n");
+    if ($cardGameChoice === 1) {
+        echo "Ordre de puissance des noms : As > Roi > Dame > Valet > 10 > 9 > 8 > 7 \n";
+    } else {
+        echo "Ordre de puissance des noms : As > Roi > Dame > Valet > 10 > 9 > 8 > 7 > 6 > 5 > 4 > 3 > 2 \n";
+    }
+    echo "Ordre de puissance des couleurs : Pique > Coeur > Carreau > Trefle";
 
     $remainAttempt = $attemptChoice;
 
     while ($remainAttempt > 0 ) {
 
-        echo "\n \nVous avez $remainAttempt tentative(s).\n";
+        echo "\n\nVous avez $remainAttempt tentative(s).\n";
 
         // Saisie du nom de la carte par l'utilisateur
         $userCardName = null;
@@ -101,7 +110,7 @@ do {
             if (!in_array($userCardName, array_keys(App\Core\CardGame::ORDER_NAMES))) {
                 echo "Le nom que vous avez choisi n'est pas valide. \n";
             } elseif ($cardGameChoice == 1 && App\Core\CardGame::ORDER_NAMES[$userCardName] < 6) {
-                echo "Le nom de carte n'est pas valide pour un jeu de 32 cartes. Veuillez entrer un nom de carte avec une puissance strictement inférieure à 6.\n";
+                echo "Le nom de carte n'est pas valide pour un jeu de 32 cartes. Veuillez entrer un nom de carte avec une puissance strictement inférieure à 7.\n";
             }
         }
 
@@ -154,8 +163,19 @@ do {
     echo "1. Oui\n";
     echo "2. Non\n";
 
-    $restart = intval(trim(readline("Entrez votre choix : ")));
 
+    $restart = 0;
+    while($restart !== 1 && $restart !== 2) {
+        echo "Entrez votre choix : ";
+        $restart = intval(trim(readline("")));
+    }
+
+    if ($restart == 1) {
+        for ($i=0; $i<100; $i++) {
+            echo "\n";
+        }
+        echo " - NOUVELLE PARTIE - \n\n\n";
+    }
 } while ($restart === 1);
 
 echo "\n\n - FIN -";
